@@ -13,16 +13,16 @@ appVersion: "1.16.0"
 dependencies:
   - name: helm_vote
     version: "0.2.0"
-    repository: "oci://registry-1.docker.io/Namrata1-99"
+    repository: "oci://registry-1.docker.io/namrata99"
   - name: helm_result
     version: "0.2.0"
-    repository: "oci://registry-1.docker.io/Namrata1-99"
+    repository: "oci://registry-1.docker.io/namrata99"
   - name: helm_worker
     version: "0.2.0"
-    repository: "oci://registry-1.docker.io/Namrata1-99"
+    repository: "oci://registry-1.docker.io/namrata99"
   - name: psql
     version: "0.1.0"
-    repository: "oci://registry-1.docker.io/Namrata1-99"
+    repository: "oci://registry-1.docker.io/namrata99"
   - name: redis
     version: "0.1.0"
-    repository: "oci://registry-1.docker.io/Namrata1-99"
+    repository: "oci://registry-1.docker.io/namrata99"
