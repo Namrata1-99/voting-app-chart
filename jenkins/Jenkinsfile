@@ -1,16 +1,74 @@
 pipeline{
     agent any
-    
-    parameters{}
+    environment{
+        dockertoken=credentials("docker-token")
+    }
+    parameters{
+        string(name: 'voteChartVersion', defaultValue: '', description: 'vote helm chart version')
+        string(name: 'workerChartVersion', defaultValue: '', description: 'worker helm chart version')
+        string(name: 'resultChartVersion', defaultValue: '', description: 'result helm chart version')
+    }
 
     stages{
         stage('Package/Push chart'){
+            
+            steps{ 
+                sh """
+                git branch -D main
+                git checkout -b main
+                """
+                script{
+                    if (params.voteChartVersion !="") {
+                        sh """
+                        cp ./chart/Chart.yaml chart.yaml.tmp && sed -e '/helm_vote/ {' -e 'n; /^\\([[:space:]]*version: \\).*/s//\\1${params.voteChartVersion}/' -e '}' < chart.yaml.tmp >./chart/Chart.yaml && rm -f chart.yaml.tmp
+                        """
+                    } else if (params.workerChartVersion !="") {
+                        sh """
+                        cp ./chart/Chart.yaml chart.yaml.tmp && sed -e '/helm_worker/ {' -e 'n; /^\\([[:space:]]*version: \\).*/s//\\1${params.workerChartVersion}/' -e '}' < chart.yaml.tmp >./chart/Chart.yaml && rm -f chart.yaml.tmp
+                        """
+                    } else if (params.resultChartVersion !="") {
+                        sh """
+                        cp ./chart/Chart.yaml chart.yaml.tmp && sed -e '/helm_result/ {' -e 'n; /^\\([[:space:]]*version: \\).*/s//\\1${params.resultChartVersion}/' -e '}' < chart.yaml.tmp >./chart/Chart.yaml && rm -f chart.yaml.tmp
+                        """
+                    }
+                    else{
+                        echo 'logic to abort the job'
+                    }
+                    sh """
+                    helm dependency update ./chart/
+                    cp ./chart/Chart.yaml chart.yaml.tmp && sed -e '/type:/ {' -e 'n; /^\\([[:space:]]*version: \\).*/s//\\10.${BUILD_NUMBER}.0/' -e '}' < chart.yaml.tmp >./chart/Chart.yaml && rm -f chart.yaml.tmp
+                    helm package ./chart/
+                    echo \${dockertoken} | helm registry login registry-1.docker.io -u namrata99 --password-stdin
+                    helm push voting_app_chart-0.\${BUILD_NUMBER}.0.tgz oci://registry-1.docker.io/namrata99
+                    """
+                }
+            }
+        }
+        stage('update git repo'){
+            steps{
+                sshagent (['git-ssh']) {
+                    sh """
+                    git config --global user.email "namrata.padgilwar@thoughtworks"
+                    git config --global user.name "Namrata1-99"
+                    git branch
+                    git remote set-url origin git@github.com:Namrata1-99/voting-app-chart.git 
+                    git add .
+                    git status
+                    git commit -m"update chart.yaml"
+                    git push -u origin main
+                    """
+                }
+            }
+        }
+        stage ('deploy helm chart'){
             steps{
                 script{
-                    sh """
-                    helm package ./chart/
-                    helm push voting-app-chart-0.1.0.tgz oci://registry-1.docker.io/vikasharya000
-                    """
+                    kubeconfig(credentialsId: 'kubeconfig') {
+                        sh"""
+                        helm delete \$(helm ls -aq) || true
+                        helm install vote-app-chart oci://registry-1.docker.io/namrata99/voting_app_chart --version 0.${BUILD_NUMBER}.0
+                        """
+                    }
                 }
             }
         }
