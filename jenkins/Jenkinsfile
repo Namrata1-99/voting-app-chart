@@ -14,7 +14,7 @@ pipeline{
             
             steps{ 
                 sh """
-                git branch -D main
+                git branch -D main || true
                 git checkout -b main
                 """
                 script{
