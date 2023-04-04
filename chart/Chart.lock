@@ -1,7 +1,7 @@
 dependencies:
 - name: helm_vote
   repository: oci://registry-1.docker.io/namrata99
-  version: 0.13.0
+  version: 0.14.0
 - name: helm_result
   repository: oci://registry-1.docker.io/namrata99
   version: 0.2.0
@@ -14,5 +14,5 @@ dependencies:
 - name: redis
   repository: oci://registry-1.docker.io/namrata99
   version: 0.1.0
-digest: sha256:1bd7eecf7415790431e16f844cc667bfbb906e41a8dfca5b9e9a7349d82c1272
-generated: "2023-04-03T07:19:14.278860832Z"
+digest: sha256:6a39e7f711197d5a602608c19a003507efe2b995662c9aa1149fe2fcd6ca5e53
+generated: "2023-04-04T09:40:20.912533984Z"
